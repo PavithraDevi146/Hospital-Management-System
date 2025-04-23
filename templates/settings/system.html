@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - Hospital Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #343a40;
+        }
+        .sidebar-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.5rem 1rem;
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar-link:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .settings-card {
+            margin-bottom: 20px;
+        }
+        .settings-card .card-header {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">Hospital Management System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ current_user.name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('settings.profile') }}">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 col-lg-2 px-0 sidebar">
+                <div class="mt-2">
+                    <a href="{{ url_for('dashboard.index') }}" class="sidebar-link">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('patients.list') }}" class="sidebar-link">
+                        <i class="fas fa-user-injured me-2"></i> Patients
+                    </a>
+                    <a href="{{ url_for('appointments.list') }}" class="sidebar-link">
+                        <i class="fas fa-calendar-check me-2"></i> Appointments
+                    </a>
+                    <a href="{{ url_for('doctors.list') }}" class="sidebar-link">
+                        <i class="fas fa-user-md me-2"></i> Doctors
+                    </a>
+                    <a href="{{ url_for('medical_records.list') }}" class="sidebar-link">
+                        <i class="fas fa-file-medical me-2"></i> Medical Records
+                    </a>
+                    <a href="{{ url_for('billing.list') }}" class="sidebar-link">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> Billing
+                    </a>
+                    <a href="{{ url_for('settings.index') }}" class="sidebar-link active">
+                        <i class="fas fa-cog me-2"></i> Settings
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 col-lg-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>System Settings</h1>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- Hospital Information Settings -->
+                        <div class="card settings-card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Hospital Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('settings.system') }}">
+                                    <input type="hidden" name="form_type" value="hospital_info">
+                                    <div class="mb-3">
+                                        <label for="hospital_name" class="form-label">Hospital Name</label>
+                                        <input type="text" class="form-control" id="hospital_name" name="hospital_name" value="Hospital Management System">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="hospital_address" class="form-label">Address</label>
+                                        <textarea class="form-control" id="hospital_address" name="hospital_address" rows="3">123 Medical Drive, Healthcare City, HC 12345</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="hospital_phone" class="form-label">Phone</label>
+                                        <input type="text" class="form-control" id="hospital_phone" name="hospital_phone" value="(123) 456-7890">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="hospital_email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="hospital_email" name="hospital_email" value="contact@hmgmt.com">
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">Update Hospital Info</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <!-- Email Settings -->
+                        <div class="card settings-card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Email Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('settings.system') }}">
+                                    <input type="hidden" name="form_type" value="email_settings">
+                                    <div class="mb-3">
+                                        <label for="smtp_server" class="form-label">SMTP Server</label>
+                                        <input type="text" class="form-control" id="smtp_server" name="smtp_server" value="smtp.example.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="smtp_port" class="form-label">SMTP Port</label>
+                                        <input type="number" class="form-control" id="smtp_port" name="smtp_port" value="587">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="smtp_username" class="form-label">SMTP Username</label>
+                                        <input type="text" class="form-control" id="smtp_username" name="smtp_username" value="notifications@hmgmt.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="smtp_password" class="form-label">SMTP Password</label>
+                                        <input type="password" class="form-control" id="smtp_password" name="smtp_password" value="●●●●●●●●">
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">Update Email Settings</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- Backup Settings -->
+                        <div class="card settings-card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Database Backup</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('settings.system') }}">
+                                    <input type="hidden" name="form_type" value="backup_settings">
+                                    <div class="mb-3">
+                                        <label for="backup_frequency" class="form-label">Backup Frequency</label>
+                                        <select class="form-select" id="backup_frequency" name="backup_frequency">
+                                            <option value="daily">Daily</option>
+                                            <option value="weekly" selected>Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="backup_time" class="form-label">Backup Time</label>
+                                        <input type="time" class="form-control" id="backup_time" name="backup_time" value="02:00">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="backup_retention" class="form-label">Retention Period (days)</label>
+                                        <input type="number" class="form-control" id="backup_retention" name="backup_retention" value="30">
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">Update Backup Settings</button>
+                                        <button type="button" class="btn btn-success">Backup Now</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <!-- System Maintenance -->
+                        <div class="card settings-card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">System Maintenance</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-4">
+                                    <h6>Clear Cache</h6>
+                                    <p class="text-muted">Clear application cache to free up server resources.</p>
+                                    <button type="button" class="btn btn-outline-primary">Clear Cache</button>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h6>System Logs</h6>
+                                    <p class="text-muted">Download system logs for troubleshooting.</p>
+                                    <button type="button" class="btn btn-outline-primary">Download Logs</button>
+                                </div>
+                                
+                                <div>
+                                    <h6 class="text-danger">Maintenance Mode</h6>
+                                    <p class="text-muted">Enable maintenance mode to temporarily disable user access.</p>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="maintenance_mode">
+                                        <label class="form-check-label" for="maintenance_mode">Enable Maintenance Mode</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+# Flask==2.0.1
+# python-dotenv==0.19.0
+# supabase==0.0.4
+# Flask-WTF==0.15.1
+# Flask-Login==0.5.0
+# Werkzeug==2.0.1
+# Pillow==9.0.0
+# PyPDF2==1.26.0
+# python-magic==0.4.24
+# boto3==1.20.0
+# flask-uploads==0.2.1
+# pdfkit==1.0.0
+# matplotlib==3.5.0
+# numpy==1.21.4
+
+
+Flask
+python-dotenv
+supabase
+Flask-WTF
+Flask-Login
+Werkzeug
+Pillow
+PyPDF2
+python-magic
+boto3
+flask-uploads
+pdfkit
+matplotlib
+numpy
+email_validator

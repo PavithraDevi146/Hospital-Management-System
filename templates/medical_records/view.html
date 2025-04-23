@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Record Details - Hospital Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #343a40;
+        }
+        .sidebar-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.5rem 1rem;
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar-link:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .record-detail {
+            margin-bottom: 1rem;
+        }
+        .record-detail-label {
+            font-weight: bold;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">Hospital Management System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ current_user.name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 col-lg-2 px-0 sidebar">
+                <div class="mt-2">
+                    <a href="{{ url_for('dashboard.index') }}" class="sidebar-link">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('patients.list') }}" class="sidebar-link">
+                        <i class="fas fa-user-injured me-2"></i> Patients
+                    </a>
+                    <a href="{{ url_for('appointments.list') }}" class="sidebar-link">
+                        <i class="fas fa-calendar-check me-2"></i> Appointments
+                    </a>
+                    <a href="{{ url_for('doctors.list') }}" class="sidebar-link">
+                        <i class="fas fa-user-md me-2"></i> Doctors
+                    </a>
+                    <a href="{{ url_for('medical_records.list') }}" class="sidebar-link">
+                        <i class="fas fa-file-medical me-2"></i> Medical Records
+                    </a>
+                    <a href="{{ url_for('billing.list') }}" class="sidebar-link">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> Billing
+                    </a>
+                    <a href="{{ url_for('settings.index') }}" class="sidebar-link active">
+                        <i class="fas fa-cog me-2"></i> Settings
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 col-lg-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Medical Record Details</h1>
+                    <div>
+                        <a href="{{ url_for('medical_records.edit', id=record.id) }}" class="btn btn-warning me-2">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{{ url_for('medical_records.list') }}" class="btn btn-secondary me-2">
+                            <i class="fas fa-list"></i> All Records
+                        </a>
+                        <a href="{{ url_for('patients.view', id=record.patient_id) }}" class="btn btn-info">
+                            <i class="fas fa-user-injured"></i> Patient Profile
+                        </a>
+                    </div>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5><i class="fas fa-file-medical me-2"></i>Record Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Record Type</div>
+                                    <div>{{ record.record_type|replace('_', ' ')|title }}</div>
+                                </div>
+                                
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Date</div>
+                                    <div>{{ record.record_date }}</div>
+                                </div>
+                                
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Title</div>
+                                    <div>{{ record.title }}</div>
+                                </div>
+                                
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Doctor</div>
+                                    <div>{{ record.users.name }}</div>
+                                </div>
+                                
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Description</div>
+                                    <div>{{ record.description }}</div>
+                                </div>
+                                
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Additional Notes</div>
+                                    <div>{{ record.notes or 'No additional notes provided' }}</div>
+                                </div>
+
+                                {% if record.attachments %}
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Attachments</div>
+                                    <div>
+                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5><i class="fas fa-user-injured me-2"></i>Patient Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Name</div>
+                                    <div>{{ record.patients.name }}</div>
+                                </div>
+                                
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Email</div>
+                                    <div>{{ record.patients.email }}</div>
+                                </div>
+                                
+                                <div class="record-detail">
+                                    <div class="record-detail-label">Phone</div>
+                                    <div>{{ record.patients.phone }}</div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <a href="{{ url_for('medical_records.patient_records', patient_id=record.patient_id) }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-clipboard-list"></i> View All Patient Records
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-clock me-2"></i>Record Timeline</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <i class="fas fa-plus-circle text-success me-2"></i> Created:
+                                        <span class="float-end">{{ record.created_at|default('Not available', true) }}</span>
+                                    </li>
+                                    {% if record.updated_at %}
+                                    <li class="list-group-item">
+                                        <i class="fas fa-edit text-warning me-2"></i> Last Updated:
+                                        <span class="float-end">{{ record.updated_at }}</span>
+                                    </li>
+                                    {% endif %}
+                                    <li class="list-group-item">
+                                        <i class="fas fa-user text-info me-2"></i> Created By:
+                                        <span class="float-end">{{ record.created_by }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

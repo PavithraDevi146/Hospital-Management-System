@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Invoice - Hospital Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #343a40;
+        }
+        .sidebar-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.5rem 1rem;
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar-link:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .invoice-header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .badge-lg {
+            font-size: 1rem;
+        }
+        .invoice-details {
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+            body {
+                padding: 0;
+                margin: 0;
+            }
+            .container {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary no-print">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">Hospital Management System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ current_user.name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('settings.profile') }}">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 col-lg-2 px-0 sidebar no-print">
+                <div class="mt-2">
+                    <a href="{{ url_for('dashboard.index') }}" class="sidebar-link">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('patients.list') }}" class="sidebar-link">
+                        <i class="fas fa-user-injured me-2"></i> Patients
+                    </a>
+                    <a href="{{ url_for('appointments.list') }}" class="sidebar-link">
+                        <i class="fas fa-calendar-check me-2"></i> Appointments
+                    </a>
+                    <a href="{{ url_for('doctors.list') }}" class="sidebar-link">
+                        <i class="fas fa-user-md me-2"></i> Doctors
+                    </a>
+                    <a href="{{ url_for('medical_records.list') }}" class="sidebar-link">
+                        <i class="fas fa-file-medical me-2"></i> Medical Records
+                    </a>
+                    <a href="{{ url_for('billing.list') }}" class="sidebar-link active">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> Billing
+                    </a>
+                    <a href="{{ url_for('settings.index') }}" class="sidebar-link">
+                        <i class="fas fa-cog me-2"></i> Settings
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 col-lg-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+                    <h1>Invoice Details</h1>
+                    <div>
+                        <button onclick="window.print()" class="btn btn-outline-dark me-2">
+                            <i class="fas fa-print"></i> Print Invoice
+                        </button>
+                        <a href="{{ url_for('billing.edit', id=invoice.id) }}" class="btn btn-warning me-2">
+                            <i class="fas fa-edit"></i> Edit Invoice
+                        </a>
+                        <a href="{{ url_for('billing.list') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Invoices
+                        </a>
+                    </div>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} no-print">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h1 class="mb-4">Invoice #INV-{{ invoice.id|truncate(8, True, '') }}</h1>
+                                
+                                <div class="mb-4">
+                                    <h5>Billed To:</h5>
+                                    <p class="mb-1"><strong>{{ invoice.patients.name }}</strong></p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <h5 class="text-muted">Hospital Management System</h5>
+                                <p class="mb-1">123 Medical Dr.</p>
+                                <p class="mb-1">Healthcare City, HC 12345</p>
+                                <p class="mb-3">Phone: (123) 456-7890</p>
+                                
+                                <div class="mb-2">
+                                    <span class="badge bg-{{ 'success' if invoice.status == 'paid' 
+                                        else 'warning' if invoice.status == 'pending' 
+                                        else 'danger' if invoice.status == 'overdue'
+                                        else 'secondary' }} badge-lg">
+                                        {{ invoice.status|upper }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row invoice-details mt-4">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th class="ps-0">Invoice Date:</th>
+                                        <td>{{ invoice.invoice_date }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="ps-0">Due Date:</th>
+                                        <td>{{ invoice.due_date }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <h3>Total Amount: <span class="text-primary">${{ invoice.amount }}</span></h3>
+                            </div>
+                        </div>
+
+                        <div class="mt-5">
+                            <h5>Details</h5>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Medical Services</td>
+                                        <td class="text-end">${{ invoice.amount }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border-0"></td>
+                                        <td class="border-0"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-end"><strong>Total:</strong></td>
+                                        <td class="text-end"><strong>${{ invoice.amount }}</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if invoice.notes %}
+                        <div class="mt-4">
+                            <h5>Notes</h5>
+                            <p>{{ invoice.notes }}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-5 border-top pt-4">
+                            <p class="text-muted">
+                                <small>
+                                    Invoice created on {{ invoice.created_at[:10] }}
+                                    {% if invoice.updated_at %}
+                                    <br>Last updated on {{ invoice.updated_at[:10] }}
+                                    {% endif %}
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

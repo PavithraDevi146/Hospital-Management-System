@@ -1,0 +1,329 @@
+<!--
+  Hospital Management System (HMGMT)
+  Copyright (c) 2025 KANAGARAJ M or NoCorps.org
+  All rights reserved.
+  This file is part of Hospital Management System, released under MIT License.
+-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Hospital Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #343a40;
+        }
+        .sidebar-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.5rem 1rem;
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .dashboard-card {
+            transition: transform 0.3s;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        .recent-item {
+            border-left: 4px solid #0d6efd;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">Hospital Management System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ current_user.name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 col-lg-2 px-0 sidebar">
+                <div class="mt-2">
+                    <a href="{{ url_for('dashboard.index') }}" class="sidebar-link">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('patients.list') }}" class="sidebar-link">
+                        <i class="fas fa-user-injured me-2"></i> Patients
+                    </a>
+                    <a href="{{ url_for('appointments.list') }}" class="sidebar-link">
+                        <i class="fas fa-calendar-check me-2"></i> Appointments
+                    </a>
+                    <a href="{{ url_for('doctors.list') }}" class="sidebar-link">
+                        <i class="fas fa-user-md me-2"></i> Doctors
+                    </a>
+                    <a href="{{ url_for('medical_records.list') }}" class="sidebar-link">
+                        <i class="fas fa-file-medical me-2"></i> Medical Records
+                    </a>
+                    <a href="{{ url_for('billing.list') }}" class="sidebar-link">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> Billing
+                    </a>
+                    <a href="{{ url_for('settings.index') }}" class="sidebar-link active">
+                        <i class="fas fa-cog me-2"></i> Settings
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 col-lg-10 p-4">
+                <h1 class="mb-4">Dashboard</h1>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="row">
+                    <!-- Patients Card -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card text-white bg-primary dashboard-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-user-injured me-2"></i>Patients</h5>
+                                <h1 class="display-4">{{ patient_count }}</h1>
+                                <p class="card-text">Total registered patients</p>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('patients.list') }}" class="text-white">View details</a>
+                                <i class="fas fa-arrow-circle-right"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appointments Card -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card text-white bg-success dashboard-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-calendar-check me-2"></i>Appointments</h5>
+                                <h1 class="display-4">{{ appointment_count }}</h1>
+                                <p class="card-text">Total scheduled appointments</p>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('appointments.list') }}" class="text-white">View details</a>
+                                <i class="fas fa-arrow-circle-right"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Appointments Card -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card text-white bg-warning dashboard-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-calendar-day me-2"></i>Today</h5>
+                                <h1 class="display-4">{{ today_appointment_count }}</h1>
+                                <p class="card-text">Appointments scheduled for today</p>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('appointments.list') }}" class="text-white">View today's schedule</a>
+                                <i class="fas fa-arrow-circle-right"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Doctors Card -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card text-white bg-info dashboard-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-user-md me-2"></i>Doctors</h5>
+                                <h1 class="display-4">{{ doctor_count }}</h1>
+                                <p class="card-text">Medical personnel</p>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('doctors.list') }}" class="text-white">View details</a>
+                                <i class="fas fa-arrow-circle-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two-column layout for upcoming appointments and recent activity -->
+                <div class="row mt-4">
+                    <!-- Upcoming Appointments -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Upcoming Appointments</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if upcoming_appointments %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Patient</th>
+                                                    <th>Doctor</th>
+                                                    <th>Date/Time</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for appt in upcoming_appointments %}
+                                                <tr>
+                                                    <td>{{ appt.patient_name }}</td>
+                                                    <td>{{ appt.doctor_name }}</td>
+                                                    <td>{{ appt.date }} {{ appt.time }}</td>
+                                                    <td>
+                                                        <span class="badge bg-{{ 'success' if appt.status == 'confirmed' else 'warning' }}">
+                                                            {{ appt.status }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-end mt-2">
+                                        <a href="{{ url_for('appointments.list') }}" class="btn btn-sm btn-primary">View All</a>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">No upcoming appointments scheduled.</p>
+                                    <a href="{{ url_for('appointments.schedule') }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus me-1"></i> Schedule New Appointment
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Patients -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-user-injured me-2"></i>Recent Patients</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if recent_patients %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Phone</th>
+                                                    <th>Gender</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for patient in recent_patients %}
+                                                <tr>
+                                                    <td>{{ patient.name }}</td>
+                                                    <td>{{ patient.phone }}</td>
+                                                    <td>{{ patient.gender }}</td>
+                                                    <td>
+                                                        <a href="{{ url_for('patients.view', id=patient.id) }}" class="btn btn-sm btn-outline-primary">
+                                                            View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-end mt-2">
+                                        <a href="{{ url_for('patients.list') }}" class="btn btn-sm btn-success">View All</a>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">No patients in the system yet.</p>
+                                    <a href="{{ url_for('patients.add') }}" class="btn btn-sm btn-success">
+                                        <i class="fas fa-plus me-1"></i> Add New Patient
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Medical Records -->
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-file-medical me-2"></i>Recent Medical Records</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if recent_records %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Patient</th>
+                                                    <th>Doctor</th>
+                                                    <th>Date</th>
+                                                    <th>Type</th>
+                                                    <th>Diagnosis</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for record in recent_records %}
+                                                <tr>
+                                                    <td>{{ record.patient_name }}</td>
+                                                    <td>{{ record.doctor_name }}</td>
+                                                    <td>{{ record.record_date }}</td>
+                                                    <td>{{ record.record_type }}</td>
+                                                    <td>{{ record.diagnosis|truncate(30) }}</td>
+                                                    <td>
+                                                        <a href="{{ url_for('medical_records.view', id=record.id) }}" class="btn btn-sm btn-outline-info">
+                                                            View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-end mt-2">
+                                        <a href="{{ url_for('medical_records.list') }}" class="btn btn-sm btn-info">View All Records</a>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">No recent medical records to display.</p>
+                                    <a href="{{ url_for('medical_records.add') }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-plus me-1"></i> Add New Record
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

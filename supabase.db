@@ -1,0 +1,172 @@
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID UNIQUE REFERENCES auth.users(id),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50),
+    role VARCHAR(50) NOT NULL CHECK (role IN ('doctor', 'admin', 'manager', 'staff')),
+    specialty VARCHAR(255),
+    department VARCHAR(100),
+    qualification TEXT,
+    experience VARCHAR(50),
+    bio TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE,
+    created_by UUID
+);
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view all users" ON users
+  FOR SELECT USING (true);
+
+CREATE POLICY "Admin can insert users" ON users
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Admin can update users" ON users
+  FOR UPDATE USING (true);
+
+
+CREATE TABLE patients (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50) NOT NULL,
+    date_of_birth DATE NOT NULL,
+    gender VARCHAR(10) CHECK (gender IN ('male', 'female', 'other')),
+    blood_group VARCHAR(5),
+    address TEXT,
+    medical_history TEXT,
+    registered_by UUID,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can view patients" ON patients
+  FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can insert patients" ON patients
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can update patients" ON patients
+  FOR UPDATE USING (true);
+
+
+CREATE TABLE appointments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id UUID REFERENCES patients(id) NOT NULL,
+    doctor_id UUID REFERENCES users(id) NOT NULL,
+    date DATE NOT NULL,
+    time TIME NOT NULL,
+    reason VARCHAR(255) NOT NULL,
+    status VARCHAR(20) CHECK (status IN ('scheduled', 'confirmed', 'completed', 'cancelled')) DEFAULT 'scheduled',
+    notes TEXT,
+    created_by UUID,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can view appointments" ON appointments
+  FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can insert appointments" ON appointments
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can update appointments" ON appointments
+  FOR UPDATE USING (true);
+
+
+CREATE TABLE medical_records (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id UUID REFERENCES patients(id) NOT NULL,
+    doctor_id UUID REFERENCES users(id) NOT NULL,
+    record_type VARCHAR(50) CHECK (record_type IN ('consultation', 'lab_test', 'prescription', 'imaging', 'surgery', 'discharge', 'other')),
+    diagnosis VARCHAR(255) NOT NULL,
+    treatment TEXT NOT NULL,
+    notes TEXT,
+    record_date DATE NOT NULL,
+    attachment_url TEXT,
+    created_by UUID,
+    updated_by UUID,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+ALTER TABLE medical_records ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can view medical records" ON medical_records
+  FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can insert medical records" ON medical_records
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can update medical records" ON medical_records
+  FOR UPDATE USING (true);
+
+
+-- Create user in auth schema (use a secure password)
+-- INSERT INTO auth.users (email, encrypted_password, email_confirmed_at)
+-- VALUES ('admin@example.com', crypt('Aaaa@1234', gen_salt('bf')), now());
+
+-- Get the user ID
+-- Insert the admin into your custom users table
+INSERT INTO users (user_id, email, name, role, phone)
+VALUES (
+    'bc9cfc3c-2e01-4813-b4b4-49975c8917ff',  -- Replace with actual UUID from dashboard
+    'youremail@gmail.com',
+    'System Administrator',
+    'admin',
+    '0123456789'
+);
+
+ALTER TABLE medical_records DISABLE ROW LEVEL SECURITY;
+
+
+-- First, ensure RLS is disabled on the medical_records table
+ALTER TABLE medical_records DISABLE ROW LEVEL SECURITY;
+
+-- Drop any existing policies on the table
+DROP POLICY IF EXISTS "Authenticated users can view medical records" ON medical_records;
+DROP POLICY IF EXISTS "Authenticated users can insert medical records" ON medical_records;
+DROP POLICY IF EXISTS "Authenticated users can update medical records" ON medical_records;
+
+-- Make sure the foreign key references have permissions
+-- Grant insert access to both referenced tables
+GRANT INSERT ON patients TO authenticated;
+GRANT INSERT ON users TO authenticated;
+
+-- Make sure the current user has the anon role permissions
+GRANT anon TO authenticated;
+
+
+-- Create invoices table
+CREATE TABLE invoices (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id UUID REFERENCES patients(id) NOT NULL,
+    invoice_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    status VARCHAR(20) CHECK (status IN ('pending', 'paid', 'overdue', 'cancelled')) DEFAULT 'pending',
+    payment_method VARCHAR(20),
+    amount DECIMAL(10,2) NOT NULL,
+    notes TEXT,
+    created_by UUID,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Enable RLS on invoices
+ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for invoices
+CREATE POLICY "Authenticated users can view invoices" ON invoices
+  FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can insert invoices" ON invoices
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can update invoices" ON invoices
+  FOR UPDATE USING (true);
