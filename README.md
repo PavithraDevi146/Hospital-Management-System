@@ -7,7 +7,7 @@ A comprehensive Flask-based hospital management system with patient records, app
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Copyright (c) 2025 KANAGARAJ M or NoCorps.org All rights reserved.
+Copyright (c) 2025 PAVITHRA DEVI M or NoCorps.org All rights reserved.
 
 The Hospital Management System name and logo are trademarks of Your Name or Organization.
 
